@@ -1,0 +1,23 @@
+@use "../helpers/variables" as *;
+@use "../helpers/mixins" as *;
+
+%tile-base {
+  background-color: $tile-bg;
+  .percentage-info {
+    font-size: $text-sm;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .percentage-info-positive {
+    color: $green;
+  }
+  .percentage-info-negative {
+    color: $red;
+  }
+  &:hover {
+    background-color: $tile-bg-hover;
+    cursor: pointer;
+    @include scale(1.05);
+  }
+}

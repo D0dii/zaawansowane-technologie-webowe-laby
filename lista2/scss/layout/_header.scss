@@ -1,0 +1,15 @@
+@use "../helpers/variables" as *;
+
+%header-shared {
+  font-weight: $font-bold;
+}
+
+h1 {
+  @extend %header-shared;
+  font-size: $text-3xl;
+}
+
+h2 {
+  @extend %header-shared;
+  font-size: $text-2xl;
+}

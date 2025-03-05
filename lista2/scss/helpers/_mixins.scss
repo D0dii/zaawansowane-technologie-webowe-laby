@@ -1,0 +1,6 @@
+@mixin scale($ratio) {
+  transition: transform 0.3s;
+  &:hover {
+    transform: scale($ratio);
+  }
+}

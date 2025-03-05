@@ -1,0 +1,23 @@
+@use "../helpers/variables" as *;
+
+body {
+  background-color: $bg-color;
+  color: $font-primary;
+  font-size: $text-base;
+  font-family: $font-family;
+  padding-block: 32px;
+  padding-inline: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sub-text {
+  color: $font-secondary;
+}

@@ -1,0 +1,32 @@
+@use "../helpers/variables" as *;
+@use "./tile" as *;
+
+.small-tile-section-overview {
+  margin-bottom: 16px;
+}
+
+.small-tile-header,
+.small-tile-main {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+.small-tile {
+  & .small-tile-main-info {
+    font-size: $text-3xl;
+    font-weight: $font-bold;
+  }
+  @extend %tile-base;
+
+  width: $tile-width;
+  height: $small-tile-height;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 28px;
+  align-items: center;
+  gap: 8px;
+  border-radius: $tile-radius;
+}

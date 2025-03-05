@@ -1,0 +1,47 @@
+@use "../helpers/variables" as *;
+@use "./tile" as *;
+
+.big-tile {
+  & .big-tile-main-info {
+    font-size: $text-4xl;
+    font-weight: $font-bold;
+  }
+  & .big-tile-sub-text {
+    font-size: $text-lg;
+    color: $font-secondary;
+    text-transform: uppercase;
+  }
+  & .big-title-main-info-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  & .big-tile-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  @extend %tile-base;
+
+  width: $tile-width;
+  border-radius: $tile-radius;
+  height: $tile-height;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-block: 28px;
+  align-items: center;
+  gap: 8px;
+}
+
+$border-colors: (
+  blue: $blue,
+  red: $red,
+  orange: $orange,
+);
+
+@each $name, $color in $border-colors {
+  .big-tile-border-#{$name} {
+    border-top: 3px solid $color;
+  }
+}
