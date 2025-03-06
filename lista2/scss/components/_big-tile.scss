@@ -29,7 +29,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding-block: 28px;
+  padding-block: calc($tile-height / 9);
   align-items: center;
   gap: 8px;
 }
@@ -41,7 +41,7 @@ $border-colors: (
 );
 
 @each $name, $color in $border-colors {
-  .big-tile-border-#{$name} {
+  .big-tile-border-#{"" + $name} {
     border-top: 3px solid $color;
   }
 }
