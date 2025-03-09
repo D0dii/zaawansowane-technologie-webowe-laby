@@ -1,0 +1,10 @@
+@use "./mixins" as *;
+@use "./variables" as *;
+
+.light-theme {
+  @include theme(light);
+}
+
+.dark-theme {
+  @include theme(dark);
+}

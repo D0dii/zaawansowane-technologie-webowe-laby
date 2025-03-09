@@ -2,7 +2,7 @@
 @use "../helpers/mixins" as *;
 
 %tile-base {
-  background-color: $tile-bg;
+  background-color: var(--tile-bg);
   .percentage-info {
     font-size: $text-sm;
     display: flex;
@@ -16,7 +16,7 @@
     color: $red;
   }
   &:hover {
-    background-color: $tile-bg-hover;
+    background-color: var(--tile-bg-hover);
     cursor: pointer;
     @include scale(1.05);
   }

@@ -1,6 +1,24 @@
+@use "./variables" as *;
+
 @mixin scale($ratio) {
   transition: transform 0.3s;
   &:hover {
     transform: scale($ratio);
+  }
+}
+
+@mixin theme($mode) {
+  @if $mode == light {
+    --bg-color: #{$light-bg-color};
+    --font-primary: #{$light-font-primary};
+    --font-secondary: #{$light-font-secondary};
+    --tile-bg: #{$light-tile-bg};
+    --tile-bg-hover: #{$light-tile-bg-hover};
+  } @else if $mode == dark {
+    --bg-color: #{$dark-bg-color};
+    --font-primary: #{$dark-font-primary};
+    --font-secondary: #{$dark-font-secondary};
+    --tile-bg: #{$dark-tile-bg};
+    --tile-bg-hover: #{$dark-tile-bg-hover};
   }
 }

@@ -604,12 +604,12 @@ template {
 }
 
 body {
-  background-color: #20222f;
-  color: #fefffb;
+  background-color: var(--bg-color);
+  color: var(--font-primary);
   font-size: 16px;
   font-family: "Courier New", monospace;
   padding-block: 32px;
-  padding-inline: 64px;
+  padding-inline: 96px;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -622,7 +622,12 @@ main {
 }
 
 .sub-text {
-  color: #95a0c0;
+  color: var(--font-secondary);
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
 }
 
 h2, h1 {
@@ -638,7 +643,7 @@ h2 {
 }
 
 .small-tile, .big-tile {
-  background-color: #252b43;
+  background-color: var(--tile-bg);
 }
 .small-tile .percentage-info, .big-tile .percentage-info {
   font-size: 14px;
@@ -653,7 +658,7 @@ h2 {
   color: #c0032b;
 }
 .small-tile:hover, .big-tile:hover {
-  background-color: #333a56;
+  background-color: var(--tile-bg-hover);
   cursor: pointer;
   transition: transform 0.3s;
 }
@@ -678,7 +683,7 @@ h2 {
 }
 .big-tile .big-tile-sub-text {
   font-size: 18px;
-  color: #95a0c0;
+  color: var(--font-secondary);
   text-transform: uppercase;
 }
 .big-tile .big-title-main-info-section {
@@ -737,6 +742,26 @@ h2 {
   flex-wrap: wrap;
   gap: 32px;
   justify-content: center;
+}
+
+.light-theme {
+  --bg-color: #f8f9fe;
+  --font-primary: #1a1d26;
+  --font-secondary: #9698a5;
+  --tile-bg: #f0f3fa;
+  --tile-bg-hover: #e1e3f0;
+}
+
+.dark-theme {
+  --bg-color: #20222f;
+  --font-primary: #fefffb;
+  --font-secondary: #95a0c0;
+  --tile-bg: #252b43;
+  --tile-bg-hover: #333a56;
+}
+
+#btn-theme {
+  color: var(--font-primary);
 }
 
 /*# sourceMappingURL=main.css.map */

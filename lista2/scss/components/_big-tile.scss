@@ -8,7 +8,7 @@
   }
   & .big-tile-sub-text {
     font-size: $text-lg;
-    color: $font-secondary;
+    color: var(--font-secondary);
     text-transform: uppercase;
   }
   & .big-title-main-info-section {

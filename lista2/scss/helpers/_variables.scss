@@ -3,13 +3,9 @@ $red: #c0032b;
 $green: #358177;
 $orange: #f8c06b;
 $bg-color: #20222f;
-$font-primary: #fefffb;
-$font-secondary: #95a0c0;
 $font-family: "Courier New", monospace;
 $font-bold: 600;
 
-$tile-bg: #252b43;
-$tile-bg-hover: #333a56;
 $tile-radius: 6px;
 $tile-width: 250px;
 $tile-height: 250px;
@@ -22,3 +18,15 @@ $text-xl: 20px;
 $text-lg: 18px;
 $text-base: 16px;
 $text-sm: 14px;
+//light theme
+$light-bg-color: #f8f9fe;
+$light-font-primary: #1a1d26;
+$light-font-secondary: #9698a5;
+$light-tile-bg: #f0f3fa;
+$light-tile-bg-hover: #e1e3f0;
+//dark theme
+$dark-bg-color: #20222f;
+$dark-font-primary: #fefffb;
+$dark-font-secondary: #95a0c0;
+$dark-tile-bg: #252b43;
+$dark-tile-bg-hover: #333a56;

@@ -1,12 +1,12 @@
 @use "../helpers/variables" as *;
 
 body {
-  background-color: $bg-color;
-  color: $font-primary;
+  background-color: var(--bg-color);
+  color: var(--font-primary);
   font-size: $text-base;
   font-family: $font-family;
   padding-block: 32px;
-  padding-inline: 64px;
+  padding-inline: 96px;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -19,5 +19,5 @@ main {
 }
 
 .sub-text {
-  color: $font-secondary;
+  color: var(--font-secondary);
 }
