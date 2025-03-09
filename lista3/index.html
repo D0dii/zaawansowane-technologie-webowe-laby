@@ -18,6 +18,41 @@
     <link rel="stylesheet" href="css/mdb.min.css" />
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <style>
+      #my-popover {
+        background-color: #007bff;
+        padding: 20px;
+        color: white;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      }
+
+      #my-popover::backdrop {
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+
+      #my-popover {
+        opacity: 0;
+        transition: opacity 0.5s;
+      }
+
+      #my-popover:popover-open {
+        opacity: 1;
+      }
+      @keyframes popover-open {
+        from {
+          transform: translate(-50%, -50%) scale(0);
+        }
+        to {
+          transform: translate(0%, 0%) scale(1);
+        }
+      }
+
+      /* Apply the animation */
+      #my-popover {
+        animation: popover-open 0.5s forwards;
+      }
+    </style>
   </head>
   <body>
     <header>
@@ -237,7 +272,17 @@
             </div>
 
             <!-- Submit button -->
-            <button data-mdb-ripple-init type="button" class="btn btn-primary btn-block mb-4">Send</button>
+            <button
+              popovertarget="my-popover"
+              data-mdb-ripple-init
+              type="button"
+              class="btn btn-primary btn-block mb-4"
+            >
+              Send
+            </button>
+            <div id="my-popover" popover>
+              <h1>Thank you for sending message!</h1>
+            </div>
           </form>
         </section>
 
