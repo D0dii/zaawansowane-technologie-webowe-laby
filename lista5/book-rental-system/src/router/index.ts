@@ -25,6 +25,18 @@ const router = createRouter({
       component: () => import('../views/BooksView.vue'),
       meta: { layout: MainLayout },
     },
+    {
+      path: '/readers',
+      name: 'readers',
+      component: () => import('../views/ReadersView.vue'),
+      meta: { layout: MainLayout },
+    },
+    {
+      path: '/rentals',
+      name: 'rentals',
+      component: () => import('../views/RentalsView.vue'),
+      meta: { layout: MainLayout },
+    },
   ],
 })
 

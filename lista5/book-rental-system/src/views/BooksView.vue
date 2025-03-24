@@ -1,109 +1,289 @@
 <template>
-  <div>
-    <h2>Book List</h2>
+  <div class="container mx-auto py-8 px-4">
+    <h2 class="text-3xl font-bold mb-6">Book List</h2>
 
-    <!-- Formularz do dodawania nowej książki -->
-    <div>
-      <h3>Add New Book</h3>
-      <input v-model="newBook.title" placeholder="Title" />
-      <input v-model="newBook.author" placeholder="Author" />
-      <button @click="createBook">Create Book</button>
-    </div>
+    <!-- Add New Book Card -->
+    <Card class="mb-8">
+      <CardHeader>
+        <CardTitle>Add New Book</CardTitle>
+        <CardDescription
+          >Enter the details of the book you want to add to your collection.</CardDescription
+        >
+      </CardHeader>
+      <CardContent>
+        <form @submit.prevent="createBook" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label for="title">Title</Label>
+              <Input id="title" v-model="newBook.title" placeholder="Enter book title" />
+            </div>
+            <div class="space-y-2">
+              <Label for="isbn">ISBN</Label>
+              <Input id="isbn" v-model="newBook.isbn" placeholder="Enter ISBN" />
+            </div>
+            <div class="space-y-2">
+              <Label for="publicationYear">Publication Year</Label>
+              <Input
+                id="publicationYear"
+                v-model="newBook.publicationYear"
+                type="number"
+                placeholder="Enter publication year"
+              />
+            </div>
+            <div class="space-y-2 md:col-span-2">
+              <Label for="description">Description</Label>
+              <Textarea
+                id="description"
+                v-model="newBook.description"
+                placeholder="Enter book description"
+                rows="3"
+              />
+            </div>
+          </div>
+          <Button type="submit" class="w-full sm:w-auto">Add Book</Button>
+        </form>
+      </CardContent>
+    </Card>
 
-    <table border="1">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Title</th>
-          <th>Author</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="book in books" :key="book.id">
-          <td>{{ book.id }}</td>
-          <td v-if="!book.isEditing">{{ book.title }}</td>
-          <td v-if="book.isEditing"><input v-model="book.title" /></td>
+    <!-- Books Table -->
+    <Card>
+      <CardHeader>
+        <CardTitle>Books Collection</CardTitle>
+        <CardDescription>Manage your book collection with ease.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div class="overflow-x-auto">
+          <Table>
+            <TableCaption>List of Books</TableCaption>
+            <TableHeader>
+              <TableRow>
+                <TableHead class="w-[15%]">Title</TableHead>
+                <TableHead class="w-[15%]">Description</TableHead>
+                <TableHead class="w-[10%]">ISBN</TableHead>
+                <TableHead class="w-[10%]">Year</TableHead>
+                <TableHead class="w-[10%]">IsRented</TableHead>
+                <TableHead class="w-[20%]">Authors</TableHead>
+                <TableHead class="text-right w-[20%]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-for="book in books" :key="book.id">
+                <TableCell>
+                  <Input v-if="book.isEditing" v-model="book.title" class="w-full" />
+                  <span v-else>{{ book.title }}</span>
+                </TableCell>
+                <TableCell>
+                  <Textarea v-if="book.isEditing" v-model="book.description" class="w-full h-20" />
+                  <span v-else class="truncate block max-w-xs">{{ book.description }}</span>
+                </TableCell>
+                <TableCell>
+                  <Input v-if="book.isEditing" v-model="book.isbn" class="w-full" />
+                  <span v-else>{{ book.isbn }}</span>
+                </TableCell>
+                <TableCell>
+                  <Input
+                    v-if="book.isEditing"
+                    v-model="book.publicationYear"
+                    type="number"
+                    class="w-full"
+                  />
+                  <span v-else>{{ book.publicationYear }}</span>
+                </TableCell>
+                <TableCell>
+                  <Input
+                    v-if="book.isEditing"
+                    :checked="book.isRented"
+                    @change="book.isRented = $event.target.checked"
+                    type="checkbox"
+                    class="w-4 h-4"
+                  />
+                  <span v-else>{{ book.isRented ? 'Rented' : 'Available' }}</span>
+                </TableCell>
+                <TableCell>
+                  <span>{{
+                    book.authors
+                      ?.map((author: Author) => `${author.firstName} ${author.lastName}`)
+                      .join(', ')
+                  }}</span>
+                </TableCell>
+                <TableCell class="text-right">
+                  <div class="flex justify-end gap-2">
+                    <Button
+                      v-if="book.isEditing"
+                      variant="outline"
+                      size="sm"
+                      @click="saveBook(book)"
+                    >
+                      Save
+                    </Button>
+                    <Button v-else variant="outline" size="sm" @click="editBook(book)">
+                      Edit
+                    </Button>
+                    <Button variant="destructive" size="sm" @click="confirmDelete(book)">
+                      Delete
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+              <TableRow v-if="books.length === 0">
+                <TableCell colspan="6" class="text-center py-8 text-muted-foreground">
+                  No books found. Add your first book above.
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
 
-          <td v-if="!book.isEditing">{{ book.authors.join(' ') }}</td>
-          <td v-if="book.isEditing"><input v-model="book.author" /></td>
-
-          <td>
-            <button v-if="!book.isEditing" @click="editBook(book)">Edit</button>
-            <button v-if="book.isEditing" @click="saveBook(book)">Save</button>
-            <button @click="deleteBook(book.id)">Delete</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Delete Confirmation Dialog -->
+    <AlertDialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the book "{{
+              bookToDelete?.title
+            }}" from your collection.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel @click="showDeleteDialog = false">Cancel</AlertDialogCancel>
+          <AlertDialogAction @click="deleteBook(bookToDelete?.id)"> Delete </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
-export default {
-  setup() {
-    const books = ref([])
-    const newBook = ref({ title: '', author: '' })
+import type { Ref } from 'vue'
 
-    const fetchBooks = async () => {
-      try {
-        const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/books')
-        books.value = await response.json()
-        books.value.forEach((book) => (book.isEditing = false))
-      } catch (error) {
-        console.error('Error fetching books:', error)
-      }
-    }
-
-    const createBook = async () => {
-      if (!newBook.value.title || !newBook.value.author) return
-
-      try {
-        const response = await fetch('https://api.example.com/books', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newBook.value),
-        })
-        const createdBook = await response.json()
-        books.value.push({ ...createdBook, isEditing: false })
-
-        newBook.value = { title: '', author: '' } // Resetowanie formularza
-      } catch (error) {
-        console.error('Error creating book:', error)
-      }
-    }
-
-    const editBook = (book) => {
-      book.isEditing = true
-    }
-
-    const saveBook = async (book) => {
-      try {
-        await fetch(`https://api.example.com/books/${book.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: book.title, author: book.author }),
-        })
-        book.isEditing = false
-      } catch (error) {
-        console.error('Error saving book:', error)
-      }
-    }
-
-    const deleteBook = async (id) => {
-      try {
-        await fetch(`https://api.example.com/books/${id}`, { method: 'DELETE' })
-        books.value = books.value.filter((book) => book.id !== id)
-      } catch (error) {
-        console.error('Error deleting book:', error)
-      }
-    }
-
-    onMounted(fetchBooks)
-
-    return { books, newBook, createBook, editBook, saveBook, deleteBook }
-  },
+interface Author {
+  firstName: string
+  lastName: string
 }
+
+interface Book {
+  id: string
+  title: string
+  description: string
+  isbn: string
+  publicationYear: number | null
+  isRented: boolean
+  authors: Author[]
+  isEditing: boolean
+}
+
+const books = ref<Book[]>([])
+const newBook = ref({
+  title: '',
+  description: '',
+  isbn: '',
+  publicationYear: null,
+  isRented: false,
+})
+const showDeleteDialog = ref(false)
+const bookToDelete: Ref<Book | null> = ref(null)
+
+const fetchBooks = async () => {
+  try {
+    const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/books')
+    books.value = await response.json()
+    books.value.forEach((book) => (book.isEditing = false))
+  } catch (error) {
+    console.error('Error fetching books:', error)
+  }
+}
+
+const createBook = async () => {
+  if (!newBook.value.title || !newBook.value.isbn) return
+
+  try {
+    const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/books', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newBook.value),
+    })
+    const createdBook = await response.json()
+    books.value.push({ ...createdBook, isEditing: false })
+    newBook.value = {
+      title: '',
+      description: '',
+      isbn: '',
+      publicationYear: null,
+      isRented: false,
+    }
+  } catch (error) {
+    console.error('Error creating book:', error)
+  }
+}
+
+const editBook = (book: Book) => {
+  book.isEditing = true
+}
+
+const saveBook = async (book: Book) => {
+  try {
+    await fetch(`${import.meta.env.VITE_BACKEND_URL}/books/${book.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: book.title,
+        description: book.description,
+        isbn: book.isbn,
+        publicationYear: book.publicationYear,
+        isRented: book.isRented,
+      }),
+    })
+    book.isEditing = false
+  } catch (error) {
+    console.error('Error saving book:', error)
+  }
+}
+
+const confirmDelete = (book: Book) => {
+  bookToDelete.value = book
+  showDeleteDialog.value = true
+}
+
+const deleteBook = async (id: string) => {
+  if (!id) return
+
+  try {
+    await fetch(`${import.meta.env.VITE_BACKEND_URL}/books/${id}`, { method: 'DELETE' })
+    books.value = books.value.filter((book) => book.id !== id)
+    showDeleteDialog.value = false
+  } catch (error) {
+    console.error('Error deleting book:', error)
+  }
+}
+
+onMounted(fetchBooks)
 </script>

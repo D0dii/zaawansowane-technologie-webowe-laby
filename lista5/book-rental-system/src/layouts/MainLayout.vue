@@ -1,12 +1,13 @@
 <!-- src/layouts/MainLayout.vue -->
 <template>
-  <div class="main-layout">
+  <div>
     <header>
-      <nav>
+      <nav class="flex justify-end gap-4 p-4 font-semibold bg-primary-foreground bg-opacity-10">
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/books">Books</RouterLink>
         <RouterLink to="/authors">Authors</RouterLink>
-        <!-- Inne linki nawigacyjne -->
+        <RouterLink to="/readers">Readers</RouterLink>
+        <RouterLink to="/rentals">Rentals</RouterLink>
       </nav>
     </header>
 
@@ -14,7 +15,7 @@
       <RouterView />
     </main>
 
-    <footer>
+    <footer class="text-center bg-primary-foreground bg-opacity-10 p-4">
       <p>&copy; 2025 Book Catalog App</p>
     </footer>
   </div>
@@ -23,33 +24,3 @@
 <script setup lang="ts">
 // TypeScript jest włączony dzięki atrybutowi lang="ts"
 </script>
-
-<style scoped>
-/* Stylizacja layoutu */
-.main-layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-header {
-  padding: 1rem;
-  background-color: #f5f5f5;
-}
-
-nav {
-  display: flex;
-  gap: 1rem;
-}
-
-main {
-  flex: 1;
-  padding: 1rem;
-}
-
-footer {
-  padding: 1rem;
-  background-color: #f5f5f5;
-  text-align: center;
-}
-</style>
