@@ -38,10 +38,6 @@
               </Select>
             </div>
             <div class="space-y-2">
-              <Label for="rentalDate">Rental Date</Label>
-              <Input id="rentalDate" type="date" v-model="newRental.rentalDate" />
-            </div>
-            <div class="space-y-2">
               <Label for="dueDate">Due Date</Label>
               <Input id="dueDate" type="date" v-model="newRental.dueDate" />
             </div>
@@ -220,7 +216,6 @@ const readers = ref<Reader[]>([])
 const newRental = ref({
   bookId: '',
   readerId: '',
-  rentalDate: '',
   dueDate: '',
 })
 const showDeleteDialog = ref(false)
@@ -261,18 +256,11 @@ const formatDate = (dateString: string) => {
 
 // CRUD Operations
 const createRental = async () => {
-  if (
-    !newRental.value.bookId ||
-    !newRental.value.readerId ||
-    !newRental.value.rentalDate ||
-    !newRental.value.dueDate
-  )
-    return
+  if (!newRental.value.bookId || !newRental.value.readerId || !newRental.value.dueDate) return
 
   try {
     const rentalData = {
       ...newRental.value,
-      rentalDate: new Date(newRental.value.rentalDate).toISOString(),
       dueDate: new Date(newRental.value.dueDate).toISOString(),
     }
     console.log(rentalData)
@@ -290,7 +278,6 @@ const createRental = async () => {
     newRental.value = {
       bookId: '',
       readerId: '',
-      rentalDate: '',
       dueDate: '',
     }
   } catch (error) {

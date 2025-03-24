@@ -30,6 +30,14 @@
                 placeholder="Enter publication year"
               />
             </div>
+            <div class="space-y-2">
+              <Label for="authors">Authors</Label>
+              <MultiSelectCombobox
+                :options="availableAuthors"
+                v-model="newBook.authorIds"
+                placeholder="Select authors"
+              />
+            </div>
             <div class="space-y-2 md:col-span-2">
               <Label for="description">Description</Label>
               <Textarea
@@ -100,7 +108,14 @@
                   <span v-else>{{ book.isRented ? 'Rented' : 'Available' }}</span>
                 </TableCell>
                 <TableCell>
-                  <span>{{
+                  <div v-if="book.isEditing" class="space-y-2">
+                    <MultiSelectCombobox
+                      :options="availableAuthors"
+                      v-model="book.authorIds"
+                      placeholder="Select authors"
+                    />
+                  </div>
+                  <span v-else>{{
                     book.authors
                       ?.map((author: Author) => `${author.firstName} ${author.lastName}`)
                       .join(', ')
@@ -126,7 +141,7 @@
                 </TableCell>
               </TableRow>
               <TableRow v-if="books.length === 0">
-                <TableCell colspan="6" class="text-center py-8 text-muted-foreground">
+                <TableCell colspan="7" class="text-center py-8 text-muted-foreground">
                   No books found. Add your first book above.
                 </TableCell>
               </TableRow>
@@ -182,10 +197,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import MultiSelectCombobox from '@/components/multi-select-combobox.vue'
 
 import type { Ref } from 'vue'
 
 interface Author {
+  id: string
   firstName: string
   lastName: string
 }
@@ -198,25 +215,44 @@ interface Book {
   publicationYear: number | null
   isRented: boolean
   authors: Author[]
+  authorIds?: string[]
   isEditing: boolean
 }
 
 const books = ref<Book[]>([])
+const availableAuthors = ref<Array<{ value: string; label: string }>>([])
 const newBook = ref({
   title: '',
   description: '',
   isbn: '',
   publicationYear: null,
   isRented: false,
+  authorIds: [] as string[],
 })
 const showDeleteDialog = ref(false)
 const bookToDelete: Ref<Book | null> = ref(null)
+
+const fetchAuthors = async () => {
+  try {
+    const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/author')
+    const authors = await response.json()
+    availableAuthors.value = authors.map((author: Author) => ({
+      value: author.id,
+      label: `${author.firstName} ${author.lastName}`,
+    }))
+  } catch (error) {
+    console.error('Error fetching authors:', error)
+  }
+}
 
 const fetchBooks = async () => {
   try {
     const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/books')
     books.value = await response.json()
-    books.value.forEach((book) => (book.isEditing = false))
+    books.value.forEach((book) => {
+      book.isEditing = false
+      book.authorIds = book.authors.map((author) => author.id)
+    })
   } catch (error) {
     console.error('Error fetching books:', error)
   }
@@ -232,13 +268,27 @@ const createBook = async () => {
       body: JSON.stringify(newBook.value),
     })
     const createdBook = await response.json()
-    books.value.push({ ...createdBook, isEditing: false })
+
+    // Add authors to the book
+    for (const authorId of newBook.value.authorIds) {
+      await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/books/${createdBook.id}/author/${authorId}`,
+        {
+          method: 'POST',
+        },
+      )
+    }
+
+    // Refetch books to get the latest data with authors
+    await fetchBooks()
+
     newBook.value = {
       title: '',
       description: '',
       isbn: '',
       publicationYear: null,
       isRented: false,
+      authorIds: [],
     }
   } catch (error) {
     console.error('Error creating book:', error)
@@ -251,6 +301,7 @@ const editBook = (book: Book) => {
 
 const saveBook = async (book: Book) => {
   try {
+    // Update book details
     await fetch(`${import.meta.env.VITE_BACKEND_URL}/books/${book.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -262,6 +313,16 @@ const saveBook = async (book: Book) => {
         isRented: book.isRented,
       }),
     })
+
+    // Add new authors
+    for (const authorId of book.authorIds || []) {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/books/${book.id}/author/${authorId}`, {
+        method: 'POST',
+      })
+    }
+
+    // Refetch books to get the latest data with authors
+    await fetchBooks()
     book.isEditing = false
   } catch (error) {
     console.error('Error saving book:', error)
@@ -277,7 +338,14 @@ const deleteBook = async (id: string) => {
   if (!id) return
 
   try {
-    await fetch(`${import.meta.env.VITE_BACKEND_URL}/books/${id}`, { method: 'DELETE' })
+    const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/books/${id}`, {
+      method: 'DELETE',
+    })
+    const responseData = await response.json()
+    if (!responseData.ok) {
+      alert(await responseData.message)
+      return
+    }
     books.value = books.value.filter((book) => book.id !== id)
     showDeleteDialog.value = false
   } catch (error) {
@@ -285,5 +353,8 @@ const deleteBook = async (id: string) => {
   }
 }
 
-onMounted(fetchBooks)
+onMounted(() => {
+  fetchBooks()
+  fetchAuthors()
+})
 </script>
