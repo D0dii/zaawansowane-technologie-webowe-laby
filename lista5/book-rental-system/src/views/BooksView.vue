@@ -75,7 +75,7 @@
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-for="book in books" :key="book.id">
+              <TableRow v-for="book in paginatedBooks" :key="book.id">
                 <TableCell>
                   <Input v-if="book.isEditing" v-model="book.title" class="w-full" />
                   <span v-else>{{ book.title }}</span>
@@ -140,13 +140,45 @@
                   </div>
                 </TableCell>
               </TableRow>
-              <TableRow v-if="books.length === 0">
+              <TableRow v-if="paginatedBooks.length === 0">
                 <TableCell colspan="7" class="text-center py-8 text-muted-foreground">
                   No books found. Add your first book above.
                 </TableCell>
               </TableRow>
             </TableBody>
           </Table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex justify-center items-center mt-4 space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            @click="currentPage = Math.max(1, currentPage - 1)"
+            :disabled="currentPage === 1"
+          >
+            Previous
+          </Button>
+          <div class="flex space-x-1">
+            <Button
+              v-for="page in totalPages"
+              :key="page"
+              variant="outline"
+              size="sm"
+              :class="{ 'bg-primary text-primary-foreground': currentPage === page }"
+              @click="currentPage = page"
+            >
+              {{ page }}
+            </Button>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            @click="currentPage = Math.min(totalPages, currentPage + 1)"
+            :disabled="currentPage === totalPages"
+          >
+            Next
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -172,7 +204,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import {
   Table,
   TableBody,
@@ -218,6 +250,7 @@ interface Book {
   authorIds?: string[]
   isEditing: boolean
 }
+
 const books = ref<Book[]>([])
 const availableAuthors = ref<Array<{ value: string; label: string }>>([])
 const newBook = ref({
@@ -232,10 +265,23 @@ const newBook = ref({
 const showDeleteDialog = ref(false)
 const bookToDelete: Ref<Book | null> = ref(null)
 
+// Pagination
+const currentPage = ref(1)
+const itemsPerPage = 5
+
+// Computed property for paginated books
+const paginatedBooks = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return books.value.slice(start, end)
+})
+
+// Computed property for total pages
+const totalPages = computed(() => Math.ceil(books.value.length / itemsPerPage))
+
 const fetchAuthors = async () => {
   try {
     const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/author', {
-      // Add cache-busting headers
       headers: {
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache',
@@ -251,11 +297,10 @@ const fetchAuthors = async () => {
     console.error('Error fetching authors:', error)
   }
 }
+
 const fetchBooks = async () => {
-  console.log('fetching')
   try {
     const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/books', {
-      // Add cache-busting headers
       headers: {
         'Cache-Control': 'no-cache',
         Pragma: 'no-cache',
@@ -267,6 +312,11 @@ const fetchBooks = async () => {
       book.isEditing = false
       book.authorIds = book.authors.map((author) => author.id)
     })
+
+    // Reset current page if total pages reduced
+    if (currentPage.value > totalPages.value) {
+      currentPage.value = totalPages.value || 1
+    }
   } catch (error) {
     console.error('Error fetching books:', error)
   }
@@ -358,7 +408,6 @@ const deleteBook = async (id: string) => {
       return
     }
     await Promise.all([fetchBooks(), fetchAuthors()])
-    books.value = books.value.filter((book) => book.id !== id)
     showDeleteDialog.value = false
   } catch (error) {
     console.error('Error deleting book:', error)

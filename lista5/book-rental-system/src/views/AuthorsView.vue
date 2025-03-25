@@ -55,7 +55,7 @@
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-for="author in authors" :key="author.id">
+              <TableRow v-for="author in paginatedAuthors" :key="author.id">
                 <TableCell>
                   <Input v-if="author.isEditing" v-model="author.firstName" class="w-full" />
                   <span v-else>{{ author.firstName }}</span>
@@ -95,6 +95,38 @@
             </TableBody>
           </Table>
         </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex justify-center items-center mt-4 space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            @click="currentPage = Math.max(1, currentPage - 1)"
+            :disabled="currentPage === 1"
+          >
+            Previous
+          </Button>
+          <div class="flex space-x-1">
+            <Button
+              v-for="page in totalPages"
+              :key="page"
+              variant="outline"
+              size="sm"
+              :class="{ 'bg-primary text-primary-foreground': currentPage === page }"
+              @click="currentPage = page"
+            >
+              {{ page }}
+            </Button>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            @click="currentPage = Math.min(totalPages, currentPage + 1)"
+            :disabled="currentPage === totalPages"
+          >
+            Next
+          </Button>
+        </div>
       </CardContent>
     </Card>
 
@@ -120,7 +152,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import {
   Table,
   TableBody,
@@ -165,6 +197,19 @@ const newAuthor = ref({
 const showDeleteDialog = ref(false)
 const authorToDelete: Ref<Author | null> = ref(null)
 
+const currentPage = ref(1)
+const itemsPerPage = 5
+
+// Computed property for paginated books
+const paginatedAuthors = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return authors.value.slice(start, end)
+})
+
+// Computed property for total pages
+const totalPages = computed(() => Math.ceil(authors.value.length / itemsPerPage))
+
 const fetchAuthors = async () => {
   try {
     const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/author', {
@@ -177,6 +222,9 @@ const fetchAuthors = async () => {
     })
     authors.value = await response.json()
     authors.value.forEach((author) => (author.isEditing = false))
+    if (currentPage.value > totalPages.value) {
+      currentPage.value = totalPages.value || 1
+    }
   } catch (error) {
     console.error('Error fetching authors:', error)
   }

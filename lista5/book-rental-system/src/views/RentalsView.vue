@@ -68,7 +68,7 @@
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow v-for="rental in rentals" :key="rental.id">
+              <TableRow v-for="rental in paginatedRentals" :key="rental.id">
                 <TableCell>
                   <span>{{ rental.book.title }}</span>
                 </TableCell>
@@ -128,6 +128,37 @@
             </TableBody>
           </Table>
         </div>
+        <!-- Pagination Controls -->
+        <div class="flex justify-center items-center mt-4 space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            @click="currentPage = Math.max(1, currentPage - 1)"
+            :disabled="currentPage === 1"
+          >
+            Previous
+          </Button>
+          <div class="flex space-x-1">
+            <Button
+              v-for="page in totalPages"
+              :key="page"
+              variant="outline"
+              size="sm"
+              :class="{ 'bg-primary text-primary-foreground': currentPage === page }"
+              @click="currentPage = page"
+            >
+              {{ page }}
+            </Button>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            @click="currentPage = Math.min(totalPages, currentPage + 1)"
+            :disabled="currentPage === totalPages"
+          >
+            Next
+          </Button>
+        </div>
       </CardContent>
     </Card>
 
@@ -156,7 +187,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import {
   Table,
   TableBody,
@@ -232,12 +263,28 @@ const newRental = ref({
 const showDeleteDialog = ref(false)
 const rentalToDelete: Ref<Rental | null> = ref(null)
 
+const currentPage = ref(1)
+const itemsPerPage = 5
+
+// Computed property for paginated books
+const paginatedRentals = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return rentals.value.slice(start, end)
+})
+
+// Computed property for total pages
+const totalPages = computed(() => Math.ceil(rentals.value.length / itemsPerPage))
+
 // Fetch functions
 const fetchRentals = async () => {
   try {
     const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/rentals')
     rentals.value = await response.json()
     rentals.value.forEach((rental) => (rental.isEditing = false))
+    if (currentPage.value > totalPages.value) {
+      currentPage.value = totalPages.value || 1
+    }
   } catch (error) {
     console.error('Error fetching rentals:', error)
   }
@@ -301,38 +348,38 @@ const returnBook = (rental: Rental) => {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
     })
-    rental.status = 'Returned'
+    rental.status = 'zwrócona'
   } catch (error) {
     console.error('Error returning book:', error)
   }
 }
 
-const editRental = (rental: Rental) => {
-  rental.isEditing = true
-}
+// const editRental = (rental: Rental) => {
+//   rental.isEditing = true
+// }
 
-const saveRental = async (rental: Rental) => {
-  try {
-    await fetch(`${import.meta.env.VITE_BACKEND_URL}/rentals/${rental.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        bookId: rental.bookId,
-        readerId: rental.readerId,
-        rentalDate: rental.rentalDate,
-        dueDate: rental.dueDate,
-      }),
-    })
-    rental.isEditing = false
-  } catch (error) {
-    console.error('Error saving rental:', error)
-  }
-}
+// const saveRental = async (rental: Rental) => {
+//   try {
+//     await fetch(`${import.meta.env.VITE_BACKEND_URL}/rentals/${rental.id}`, {
+//       method: 'PUT',
+//       headers: { 'Content-Type': 'application/json' },
+//       body: JSON.stringify({
+//         bookId: rental.bookId,
+//         readerId: rental.readerId,
+//         rentalDate: rental.rentalDate,
+//         dueDate: rental.dueDate,
+//       }),
+//     })
+//     rental.isEditing = false
+//   } catch (error) {
+//     console.error('Error saving rental:', error)
+//   }
+// }
 
-const confirmDelete = (rental: Rental) => {
-  rentalToDelete.value = rental
-  showDeleteDialog.value = true
-}
+// const confirmDelete = (rental: Rental) => {
+//   rentalToDelete.value = rental
+//   showDeleteDialog.value = true
+// }
 
 const deleteRental = async (id: string) => {
   if (!id) return
