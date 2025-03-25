@@ -112,7 +112,7 @@
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel @click="showDeleteDialog = false">Cancel</AlertDialogCancel>
-          <AlertDialogAction @click="deleteReader(readerToDelete?.id)"> Delete </AlertDialogAction>
+          <AlertDialogAction @click="deleteReader(readerToDelete?.id!)"> Delete </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -168,7 +168,14 @@ const readerToDelete: Ref<Reader | null> = ref(null)
 
 const fetchReaders = async () => {
   try {
-    const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/readers')
+    const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/readers', {
+      // Add cache-busting headers
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
+    })
     readers.value = await response.json()
     readers.value.forEach((reader) => (reader.isEditing = false))
   } catch (error) {

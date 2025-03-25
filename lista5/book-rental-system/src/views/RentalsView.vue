@@ -146,7 +146,9 @@
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel @click="showDeleteDialog = false">Cancel</AlertDialogCancel>
-          <AlertDialogAction @click="deleteRental(rentalToDelete?.id)"> Delete </AlertDialogAction>
+          <AlertDialogAction @click="deleteRental(rentalToDelete?.id!!)">
+            Delete
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -196,11 +198,20 @@ interface Rental {
   dueDate: string
   isEditing: boolean
   status: string
+  book: Book
+  reader: Reader
+}
+
+interface Author {
+  id: string
+  firstName: string
+  lastName: string
 }
 
 interface Book {
   id: string
   title: string
+  author: Author
 }
 
 interface Reader {
@@ -263,7 +274,6 @@ const createRental = async () => {
       ...newRental.value,
       dueDate: new Date(newRental.value.dueDate).toISOString(),
     }
-    console.log(rentalData)
     const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/rentals/rent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -271,7 +281,7 @@ const createRental = async () => {
     })
     const createdRental = await response.json()
     if (!response.ok) {
-      alert(createdRental.message)
+      alert(createdRental.message.message)
       return
     }
     rentals.value.push({ ...createdRental, isEditing: false })

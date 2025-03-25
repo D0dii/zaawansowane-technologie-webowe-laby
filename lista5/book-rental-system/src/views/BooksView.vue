@@ -164,7 +164,7 @@
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel @click="showDeleteDialog = false">Cancel</AlertDialogCancel>
-          <AlertDialogAction @click="deleteBook(bookToDelete?.id)"> Delete </AlertDialogAction>
+          <AlertDialogAction @click="deleteBook(bookToDelete?.id!)"> Delete </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -212,29 +212,36 @@ interface Book {
   title: string
   description: string
   isbn: string
-  publicationYear: number | null
+  publicationYear: string | number | undefined
   isRented: boolean
   authors: Author[]
   authorIds?: string[]
   isEditing: boolean
 }
-
 const books = ref<Book[]>([])
 const availableAuthors = ref<Array<{ value: string; label: string }>>([])
 const newBook = ref({
   title: '',
   description: '',
   isbn: '',
-  publicationYear: null,
+  publicationYear: undefined,
   isRented: false,
   authorIds: [] as string[],
 })
+
 const showDeleteDialog = ref(false)
 const bookToDelete: Ref<Book | null> = ref(null)
 
 const fetchAuthors = async () => {
   try {
-    const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/author')
+    const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/author', {
+      // Add cache-busting headers
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
+    })
     const authors = await response.json()
     availableAuthors.value = authors.map((author: Author) => ({
       value: author.id,
@@ -244,10 +251,17 @@ const fetchAuthors = async () => {
     console.error('Error fetching authors:', error)
   }
 }
-
 const fetchBooks = async () => {
+  console.log('fetching')
   try {
-    const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/books')
+    const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/books', {
+      // Add cache-busting headers
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
+    })
     books.value = await response.json()
     books.value.forEach((book) => {
       book.isEditing = false
@@ -279,14 +293,13 @@ const createBook = async () => {
       )
     }
 
-    // Refetch books to get the latest data with authors
-    await fetchBooks()
+    await Promise.all([fetchBooks(), fetchAuthors()])
 
     newBook.value = {
       title: '',
       description: '',
       isbn: '',
-      publicationYear: null,
+      publicationYear: undefined,
       isRented: false,
       authorIds: [],
     }
@@ -321,8 +334,7 @@ const saveBook = async (book: Book) => {
       })
     }
 
-    // Refetch books to get the latest data with authors
-    await fetchBooks()
+    await Promise.all([fetchBooks(), fetchAuthors()])
     book.isEditing = false
   } catch (error) {
     console.error('Error saving book:', error)
@@ -336,16 +348,16 @@ const confirmDelete = (book: Book) => {
 
 const deleteBook = async (id: string) => {
   if (!id) return
-
   try {
     const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/books/${id}`, {
       method: 'DELETE',
     })
-    const responseData = await response.json()
-    if (!responseData.ok) {
-      alert(await responseData.message)
+    if (response.statusText !== 'OK') {
+      const data = await response.json()
+      alert(data.message)
       return
     }
+    await Promise.all([fetchBooks(), fetchAuthors()])
     books.value = books.value.filter((book) => book.id !== id)
     showDeleteDialog.value = false
   } catch (error) {

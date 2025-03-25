@@ -112,7 +112,7 @@
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel @click="showDeleteDialog = false">Cancel</AlertDialogCancel>
-          <AlertDialogAction @click="deleteAuthor(authorToDelete?.id)"> Delete </AlertDialogAction>
+          <AlertDialogAction @click="deleteAuthor(authorToDelete?.id!)"> Delete </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -167,7 +167,14 @@ const authorToDelete: Ref<Author | null> = ref(null)
 
 const fetchAuthors = async () => {
   try {
-    const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/author')
+    const response = await fetch(import.meta.env.VITE_BACKEND_URL + '/author', {
+      // Add cache-busting headers
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
+    })
     authors.value = await response.json()
     authors.value.forEach((author) => (author.isEditing = false))
   } catch (error) {
